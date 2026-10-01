@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จองคิว</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f7f7f7; }
+    button { background: #06C755; color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; margin-top: 10px; }
+    .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h2>จองคิวร้าน QueueSalon</h2>
+  <div class="card">
+    <p>เลือกบริการ:</p>
+    <select id="service" style="width:100%; padding:10px;">
+      <option value="ทาเล็บสีพื้น">ทาเล็บสีพื้น</option>
+      <option value="เพนท์ลายเล็บ">เพนท์ลายเล็บ</option>
+    </select>
+  </div>
+  <button onclick="bookQueue()">จองคิวเลย</button>
+  <div id="result" class="card" style="display:none;"></div>
+
+  <script>
+    const LIFF_ID = "2011781441-1AQ2AFHu";
+
+async function main() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+    }
+  } catch (e) {
+    alert("liff.init error: " + e.message);
+  }
+}
+main();
+
+async function bookQueue() {
+  try {
+    const profile = await liff.getProfile();
+    const service = document.getElementById('service').value;
+
+    let location = null;
+    try {
+      location = await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => resolve(null),
+          { timeout: 5000 }
+        );
+      });
+    } catch (e) { location = null; }
+
+    const res = await fetch('/api/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: profile.userId,
+        displayName: profile.displayName,
+        service,
+        location,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      alert("Server error: " + res.status + " - " + errText);
+      return;
+    }
+
+    const data = await res.json();
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').innerHTML =
+      `<b>จองสำเร็จ!</b><br>คิวของคุณคือ #${data.queueNumber}<br>เวลารอโดยประมาณ: ${data.estimatedWait} นาที`;
+
+    setTimeout(() => liff.closeWindow(), 3000);
+  } catch (e) {
+    alert("bookQueue error: " + e.message);
+  }
+}
+  </script>
+</body>
+</html>

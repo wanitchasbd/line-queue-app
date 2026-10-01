@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - จัดการคิว</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f7f7f7; }
+    .queue-item { background: white; padding: 14px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    button { padding: 10px 18px; border: none; border-radius: 6px; background: #06C755; color: white; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>รายการคิววันนี้</h2>
+  <div id="list">กำลังโหลด...</div>
+
+  <script>
+    loadQueues();
+    setInterval(loadQueues, 5000); // รีเฟรชอัตโนมัติทุก 5 วิ
+
+    async function loadQueues() {
+      const res = await fetch('/api/queues');
+      const queues = await res.json();
+      const list = document.getElementById('list');
+
+      if (queues.length === 0) {
+        list.innerHTML = '<p>ยังไม่มีคิวตอนนี้</p>';
+        return;
+      }
+
+      list.innerHTML = queues.map(q => `
+        <div class="queue-item">
+          <span>#${q.queueNumber} ${q.displayName || ''} - ${q.service} [${q.status}]</span>
+          ${q.status === 'waiting' ? `<button onclick="callQueue('${q.id}')">เรียกคิว</button>` : ''}
+          ${q.status === 'called' ? `<button onclick="finishQueue('${q.id}')">เสร็จงาน</button>` : ''}
+        </div>
+      `).join('');
+    }
+
+    async function callQueue(id) {
+      await fetch(`/api/call/${id}`, { method: 'POST' });
+      loadQueues();
+    }
+    async function finishQueue(id) {
+      await fetch(`/api/finish/${id}`, { method: 'POST' });
+      loadQueues();
+    }
+  </script>
+</body>
+</html>
