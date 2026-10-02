@@ -131,7 +131,7 @@ app.post('/api/call/:id', async (req, res) => {
     to: queue.userId,
     messages: [{
       type: 'text',
-      text: `ถึงคิวของคุณแล้ว! #${queue.queueNumber} กรุณามาที่ร้านภายใน 5 นาทีนะคะ`,
+      text: `ถึงคิวของคุณแล้ว! #${queue.queueNumber} กรุณามาที่ร้านภายใน 10 นาทีนะคะ`,
     }],
   });
 
