@@ -12,6 +12,7 @@ const client = LineBotClient.fromChannelAccessToken({
 });
 
 const app = express();
+app.set('etag', false);   // ปิด ETag ทั้งแอป กัน browser แคช API response
 
 // --- Database setup ---
 const adapter = new JSONFile('db.json');
@@ -118,6 +119,12 @@ cron.schedule('* * * * *', async () => {
 app.get('/api/queues', async (req, res) => {
   await db.read();
   res.json(db.data.queues.filter(q => q.status !== 'done'));
+});
+
+app.post('/api/reset', async (req, res) => {
+  db.data.queues = [];
+  await db.write();
+  res.json({ ok: true, message: 'รีเซ็ตคิวทั้งหมดแล้ว' });
 });
 
 app.post('/api/call/:id', async (req, res) => {

@@ -12,8 +12,8 @@
 </head>
 <body>
   <h2>รายการคิววันนี้</h2>
+  <button onclick="resetQueues()" style="background:#e74c3c; margin-bottom:16px;">🗑️ รีเซ็ตคิวทั้งหมด</button>
   <div id="list">กำลังโหลด...</div>
-
   <script>
     loadQueues();
     setInterval(loadQueues, 5000); // รีเฟรชอัตโนมัติทุก 5 วิ
@@ -45,6 +45,11 @@
       await fetch(`/api/finish/${id}`, { method: 'POST' });
       loadQueues();
     }
+    async function resetQueues() {
+        if (!confirm('ยืนยันลบคิวทั้งหมด?')) return;
+        await fetch('/api/reset', { method: 'POST' });
+        loadQueues();
+}
   </script>
 </body>
 </html>
