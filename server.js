@@ -19,14 +19,26 @@ const SHOP_CLOSE_HOUR = 3;  // ปิด 2 ทุ่ม (20:00)
 const LAST_BOOKING_BUFFER_MIN = 30; // หยุดรับจองก่อนปิดร้าน 30 นาที กันลูกค้าจองแล้วไม่ทันคิว
 
 function isShopAcceptingBookings() {
-  // ดึงเวลาปัจจุบันตาม Timezone ประเทศไทย (Asia/Bangkok)
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
   const hour = now.getHours();
   const minute = now.getMinutes();
   const currentMinutesOfDay = hour * 60 + minute;
-  const openMinutes = SHOP_OPEN_HOUR * 60;
-  const closeMinutes = SHOP_CLOSE_HOUR * 60 - LAST_BOOKING_BUFFER_MIN;
-  return currentMinutesOfDay >= openMinutes && currentMinutesOfDay < closeMinutes;
+  
+  const openMinutes = SHOP_OPEN_HOUR * 60; // 09:00 = 540 นาที
+  
+  // ปิดรับจองก่อนตี 3 (03:00) อยู่ 30 นาที = 02:30 น. (หรือ 150 นาทีของวันใหม่)
+  const closeHourBuffer = SHOP_CLOSE_HOUR * 60 - LAST_BOOKING_BUFFER_MIN; 
+  
+  // กรณีร้านเปิดข้ามวัน (เปิด 9 โมงเช้า - ปิดตี 3 ของวันถัดไป)
+  // ช่วงเวลาที่รับจองคือ: ตั้งแต่ 09:00 น. เป็นต้นไป จนถึงก่อน 02:30 น. ของวันใหม่
+  
+  // ถ้าระหว่าง 09:00 น. ถึง 23:59 น. (นาทีที่ 540 ถึง 1439)
+  const isNormalDayTime = currentMinutesOfDay >= openMinutes;
+  
+  // ถ้าระหว่าง 00:00 น. ถึง 02:30 น. ของวันใหม่ (นาทีที่ 0 ถึง 150)
+  const isEarlyMorningTime = currentMinutesOfDay <= closeHourBuffer;
+
+  return isNormalDayTime || isEarlyMorningTime;
 }
 // --- Database setup ---
 const adapter = new JSONFile('db.json');
