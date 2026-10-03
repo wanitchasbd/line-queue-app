@@ -16,8 +16,8 @@
   <div class="card">
     <p>เลือกบริการ:</p>
     <select id="service" style="width:100%; padding:10px;">
-      <option value="ทาเล็บสีพื้น">ทาเล็บสีพื้น</option>
-      <option value="เพนท์ลายเล็บ">เพนท์ลายเล็บ</option>
+      <option value="สระไดร์">สระไดร์</option>
+      <option value="ตัดผม">ตัดผม</option>
     </select>
   </div>
   <button onclick="bookQueue()">จองคิวเลย</button>
@@ -74,7 +74,7 @@ async function bookQueue() {
     const data = await res.json();
     document.getElementById('result').style.display = 'block';
     document.getElementById('result').innerHTML =
-      `<b>จองสำเร็จ!</b><br>คิวของคุณคือ #${data.queueNumber}<br>เวลารอโดยประมาณ: ${data.estimatedWait} นาที`;
+      `<b>จองสำเร็จ!</b><br>คิวของคุณคือ #${data.queueNumber}<br>`;
 
     setTimeout(() => liff.closeWindow(), 3000);
   } catch (e) {

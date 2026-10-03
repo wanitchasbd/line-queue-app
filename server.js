@@ -115,7 +115,7 @@ function calculateDistanceKm(loc1, loc2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-const SHOP_LOCATION = { lat: 13.746126202713947, lng: 100.54070215894407 }; // ⚠️ ต้องแก้เป็นพิกัดร้านจริงของคุณ 13.746126202713947, 100.54070215894407
+const SHOP_LOCATION = { lat: 13.746126202713947, lng: 100.54070215894407 }; // ⚠️ ต้องแก้เป็นพิกัดร้านจริง 13.746126202713947, 100.54070215894407
 
 function getTravelBufferMinutes(customerLocation) {
   if (!customerLocation) return 5;
@@ -155,8 +155,9 @@ app.get('/api/queues', async (req, res) => {
 
 app.post('/api/reset', async (req, res) => {
   db.data.queues = [];
+  db.data.avgServiceTime = 8;   // รีเซ็ตค่าเฉลี่ยกลับเป็นค่าเริ่มต้นด้วย
   await db.write();
-  res.json({ ok: true, message: 'รีเซ็ตคิวทั้งหมดแล้ว' });
+  res.json({ ok: true, message: 'รีเซ็ตคิว' });
 });
 
 app.post('/api/call/:id', async (req, res) => {
