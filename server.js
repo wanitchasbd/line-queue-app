@@ -122,6 +122,25 @@ function getTravelBufferMinutes(customerLocation) {
   const distanceKm = calculateDistanceKm(customerLocation, SHOP_LOCATION);
   return Math.ceil((distanceKm / 20) * 60) + 5;
 }
+
+app.get('/api/debug/buffer', (req, res) => {
+  const lat = parseFloat(req.query.lat);
+  const lng = parseFloat(req.query.lng);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    return res.json({ note: 'ไม่ได้ส่งพิกัดมา ใช้ค่า default', bufferMinutes: getTravelBufferMinutes(null) });
+  }
+
+  const location = { lat, lng };
+  const distanceKm = calculateDistanceKm(location, SHOP_LOCATION);
+  const bufferMinutes = getTravelBufferMinutes(location);
+
+  res.json({
+    distanceKm: distanceKm.toFixed(2),
+    bufferMinutes
+  });
+});
+
 cron.schedule('* * * * *', async () => {
   console.log('⏰ cron ทำงาน:', new Date().toLocaleTimeString());
   await db.read();
