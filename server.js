@@ -15,7 +15,7 @@ const app = express();
 app.set('etag', false);   // ปิด ETag ทั้งแอป กัน browser แคช API response
 // --- ตั้งค่าเวลาเปิด-ปิดร้าน ---
 const SHOP_OPEN_HOUR = 9;    // เปิด 9 โมงเช้า
-const SHOP_CLOSE_HOUR = 20;  // ปิด 2 ทุ่ม (20:00)
+const SHOP_CLOSE_HOUR = 3;  // ปิด 2 ทุ่ม (20:00)
 const LAST_BOOKING_BUFFER_MIN = 30; // หยุดรับจองก่อนปิดร้าน 30 นาที กันลูกค้าจองแล้วไม่ทันคิว
 
 function isShopAcceptingBookings() {
