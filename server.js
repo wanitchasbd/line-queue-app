@@ -13,7 +13,20 @@ const client = LineBotClient.fromChannelAccessToken({
 
 const app = express();
 app.set('etag', false);   // ปิด ETag ทั้งแอป กัน browser แคช API response
+// --- ตั้งค่าเวลาเปิด-ปิดร้าน ---
+const SHOP_OPEN_HOUR = 9;    // เปิด 9 โมงเช้า
+const SHOP_CLOSE_HOUR = 20;  // ปิด 2 ทุ่ม (20:00)
+const LAST_BOOKING_BUFFER_MIN = 30; // หยุดรับจองก่อนปิดร้าน 30 นาที กันลูกค้าจองแล้วไม่ทันคิว
 
+function isShopAcceptingBookings() {
+  const now = new Date();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const currentMinutesOfDay = hour * 60 + minute;
+  const openMinutes = SHOP_OPEN_HOUR * 60;
+  const closeMinutes = SHOP_CLOSE_HOUR * 60 - LAST_BOOKING_BUFFER_MIN;
+  return currentMinutesOfDay >= openMinutes && currentMinutesOfDay < closeMinutes;
+}
 // --- Database setup ---
 const adapter = new JSONFile('db.json');
 const db = new Low(adapter, { queues: [], avgServiceTime: 8 }); // avgServiceTime หน่วยเป็นนาที
@@ -45,8 +58,10 @@ app.post('/webhook', middleware({ channelSecret: process.env.CHANNEL_SECRET }), 
   res.json({ status: 'ok' });
 });
 app.post('/api/book', express.json(), async (req, res) => {
-  if (!isShopOpenNow()) {
-    return res.status(400).json({ error: 'ขณะนี้ร้านปิดให้บริการ กรุณาจองใหม่ในเวลาทำการ' });
+  if (!isShopAcceptingBookings()) {
+    return res.status(400).json({
+      error: `ขออภัย ขณะนี้ร้านปิดรับคิวแล้ว เปิดให้บริการ ${SHOP_OPEN_HOUR}:00 - ${SHOP_CLOSE_HOUR}:00 น.`
+    });
   }
   const { userId, displayName, service, location } = req.body;
   await db.read();
@@ -73,13 +88,6 @@ app.post('/api/book', express.json(), async (req, res) => {
   res.json({ queueNumber: newQueue.queueNumber, estimatedWait });
 });
 
-const SHOP_OPEN_HOUR = 9;   // เปิด 9 โมงเช้า
-const SHOP_CLOSE_HOUR = 20; // ปิด 2 ทุ่ม
-
-function isShopOpenNow() {
-  const hour = new Date().getHours();
-  return hour >= SHOP_OPEN_HOUR && hour < SHOP_CLOSE_HOUR;
-}
 function updateAvgServiceTime(queue) {
   const durationMinutes = (Date.now() - queue.calledAt) / 60000;
   db.data.avgServiceTime = db.data.avgServiceTime * 0.7 + durationMinutes * 0.3;
