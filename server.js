@@ -45,6 +45,9 @@ app.post('/webhook', middleware({ channelSecret: process.env.CHANNEL_SECRET }), 
   res.json({ status: 'ok' });
 });
 app.post('/api/book', express.json(), async (req, res) => {
+  if (!isShopOpenNow()) {
+    return res.status(400).json({ error: 'ขณะนี้ร้านปิดให้บริการ กรุณาจองใหม่ในเวลาทำการ' });
+  }
   const { userId, displayName, service, location } = req.body;
   await db.read();
 
@@ -69,6 +72,14 @@ app.post('/api/book', express.json(), async (req, res) => {
 
   res.json({ queueNumber: newQueue.queueNumber, estimatedWait });
 });
+
+const SHOP_OPEN_HOUR = 9;   // เปิด 9 โมงเช้า
+const SHOP_CLOSE_HOUR = 23; // ปิด 2 ทุ่ม
+
+function isShopOpenNow() {
+  const hour = new Date().getHours();
+  return hour >= SHOP_OPEN_HOUR && hour < SHOP_CLOSE_HOUR;
+}
 function updateAvgServiceTime(queue) {
   const durationMinutes = (Date.now() - queue.calledAt) / 60000;
   db.data.avgServiceTime = db.data.avgServiceTime * 0.7 + durationMinutes * 0.3;
