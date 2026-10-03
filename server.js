@@ -74,7 +74,7 @@ app.post('/api/book', express.json(), async (req, res) => {
 });
 
 const SHOP_OPEN_HOUR = 9;   // เปิด 9 โมงเช้า
-const SHOP_CLOSE_HOUR = 23; // ปิด 2 ทุ่ม
+const SHOP_CLOSE_HOUR = 20; // ปิด 2 ทุ่ม
 
 function isShopOpenNow() {
   const hour = new Date().getHours();
