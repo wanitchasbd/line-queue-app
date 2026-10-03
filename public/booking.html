@@ -66,11 +66,10 @@ async function bookQueue() {
     });
 
     if (!res.ok) {
-  const errData = await res.json();
-  document.getElementById('result').style.display = 'block';
-  document.getElementById('result').innerHTML = `<b style="color:#e74c3c;">${errData.error}</b>`;
-  return;
-}
+      const errText = await res.text();
+      alert("Server error: " + res.status + " - " + errText);
+      return;
+    }
 
     const data = await res.json();
     document.getElementById('result').style.display = 'block';

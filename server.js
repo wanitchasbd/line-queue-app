@@ -19,7 +19,8 @@ const SHOP_CLOSE_HOUR = 20;  // ปิด 2 ทุ่ม (20:00)
 const LAST_BOOKING_BUFFER_MIN = 30; // หยุดรับจองก่อนปิดร้าน 30 นาที กันลูกค้าจองแล้วไม่ทันคิว
 
 function isShopAcceptingBookings() {
-  const now = new Date();
+  // ดึงเวลาปัจจุบันตาม Timezone ประเทศไทย (Asia/Bangkok)
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
   const hour = now.getHours();
   const minute = now.getMinutes();
   const currentMinutesOfDay = hour * 60 + minute;
